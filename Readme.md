@@ -2,6 +2,8 @@
 
 A remote debugger for AngelScript. Currently in very early stages of development.
 
+![](Screenshot.png)
+
 ## Goals
 
 * Single-header implementation in host application
