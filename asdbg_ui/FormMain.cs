@@ -226,13 +226,18 @@ namespace asdbg_ui
 		private void ClientThreadFunction()
 		{
 			while (true) {
-				ushort packetType = m_reader.ReadUInt16();
-				switch (packetType) {
-					case 1: ServerPacket_Location(); break;
-					case 2: ServerPacket_ClearLocalVariables(); break;
-					case 3: ServerPacket_LocalVariable(); break;
-					case 4: ServerPacket_Path(); break;
-					default: SetStatus("Invalid packet type " + packetType + " received!"); break;
+				try {
+					ushort packetType = m_reader.ReadUInt16();
+					switch (packetType) {
+						case 1: ServerPacket_Location(); break;
+						case 2: ServerPacket_ClearLocalVariables(); break;
+						case 3: ServerPacket_LocalVariable(); break;
+						case 4: ServerPacket_Path(); break;
+						default: SetStatus("Invalid packet type " + packetType + " received!"); break;
+					}
+				} catch (IOException) {
+					SetStatus("Disconnected!");
+					break;
 				}
 			}
 		}
@@ -278,6 +283,8 @@ namespace asdbg_ui
 			m_brokenFilename = null;
 			m_brokenLine = 0;
 			listLocals.Items.Clear();
+
+			SetStatus("Resumed.");
 		}
 
 		private void editor_MarginClick(object sender, MarginClickEventArgs e)
@@ -326,6 +333,11 @@ namespace asdbg_ui
 			}
 
 			SetCurrentFile(filename);
+		}
+
+		private void FormMain_FormClosing(object sender, FormClosingEventArgs e)
+		{
+			m_client.Close();
 		}
 	}
 }

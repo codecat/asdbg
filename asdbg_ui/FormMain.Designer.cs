@@ -146,6 +146,7 @@
             this.columnHeader3,
             this.columnHeader2});
 			this.listLocals.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.listLocals.FullRowSelect = true;
 			this.listLocals.Location = new System.Drawing.Point(12, 376);
 			this.listLocals.Name = "listLocals";
 			this.listLocals.Size = new System.Drawing.Size(835, 153);
@@ -202,6 +203,7 @@
 			this.Controls.Add(this.statusStrip1);
 			this.Name = "FormMain";
 			this.Text = "AngelScript Debugger";
+			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FormMain_FormClosing);
 			this.Load += new System.EventHandler(this.FormMain_Load);
 			this.statusStrip1.ResumeLayout(false);
 			this.statusStrip1.PerformLayout();
