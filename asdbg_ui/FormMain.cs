@@ -201,7 +201,7 @@ namespace asdbg_ui
 		private void ServerPacket_ClearLocalVariables()
 		{
 			Invoke(new Action(() => {
-				listLocals.Items.Clear();
+				gridLocals.Rows.Clear();
 			}));
 		}
 
@@ -217,9 +217,7 @@ namespace asdbg_ui
 			string value = Encoding.UTF8.GetString(m_reader.ReadBytes(valueLength));
 
 			Invoke(new Action(() => {
-				var lvi = listLocals.Items.Add(name);
-				lvi.SubItems.Add(typeName);
-				lvi.SubItems.Add(value);
+				gridLocals.Rows.Add(name, typeName, value);
 			}));
 		}
 
@@ -282,7 +280,7 @@ namespace asdbg_ui
 
 			m_brokenFilename = null;
 			m_brokenLine = 0;
-			listLocals.Items.Clear();
+			gridLocals.Rows.Clear();
 
 			SetStatus("Resumed.");
 		}
@@ -338,6 +336,21 @@ namespace asdbg_ui
 		private void FormMain_FormClosing(object sender, FormClosingEventArgs e)
 		{
 			m_client.Close();
+		}
+
+		private void gridLocals_CellEndEdit(object sender, DataGridViewCellEventArgs e)
+		{
+			var row = gridLocals.Rows[e.RowIndex];
+			var name = (string)row.Cells[0].Value;
+			var value = (string)row.Cells[2].Value;
+
+			m_writer.Write((ushort)6);
+
+			m_writer.Write((ushort)name.Length);
+			m_writer.Write(Encoding.UTF8.GetBytes(name));
+
+			m_writer.Write((ushort)value.Length);
+			m_writer.Write(Encoding.UTF8.GetBytes(value));
 		}
 	}
 }

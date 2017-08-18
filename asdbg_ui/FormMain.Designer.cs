@@ -38,14 +38,15 @@
 			this.buttonStep = new System.Windows.Forms.ToolStripButton();
 			this.buttonStepOver = new System.Windows.Forms.ToolStripButton();
 			this.buttonStepOut = new System.Windows.Forms.ToolStripButton();
-			this.listLocals = new System.Windows.Forms.ListView();
-			this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-			this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-			this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
 			this.listFiles = new System.Windows.Forms.TreeView();
 			this.imageList1 = new System.Windows.Forms.ImageList(this.components);
+			this.gridLocals = new System.Windows.Forms.DataGridView();
+			this.NameColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.TypeColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.ValueColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.statusStrip1.SuspendLayout();
 			this.toolStrip1.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.gridLocals)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// statusStrip1
@@ -137,38 +138,6 @@
 			this.buttonStepOut.Size = new System.Drawing.Size(23, 22);
 			this.buttonStepOut.Text = "Step out";
 			// 
-			// listLocals
-			// 
-			this.listLocals.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-			this.listLocals.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.columnHeader1,
-            this.columnHeader3,
-            this.columnHeader2});
-			this.listLocals.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.listLocals.FullRowSelect = true;
-			this.listLocals.Location = new System.Drawing.Point(12, 376);
-			this.listLocals.Name = "listLocals";
-			this.listLocals.Size = new System.Drawing.Size(835, 153);
-			this.listLocals.TabIndex = 4;
-			this.listLocals.UseCompatibleStateImageBehavior = false;
-			this.listLocals.View = System.Windows.Forms.View.Details;
-			// 
-			// columnHeader1
-			// 
-			this.columnHeader1.Text = "Name";
-			this.columnHeader1.Width = 150;
-			// 
-			// columnHeader3
-			// 
-			this.columnHeader3.Text = "Type";
-			this.columnHeader3.Width = 150;
-			// 
-			// columnHeader2
-			// 
-			this.columnHeader2.Text = "Value";
-			this.columnHeader2.Width = 390;
-			// 
 			// listFiles
 			// 
 			this.listFiles.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -191,13 +160,52 @@
 			this.imageList1.Images.SetKeyName(0, "Folder");
 			this.imageList1.Images.SetKeyName(1, "Script");
 			// 
+			// gridLocals
+			// 
+			this.gridLocals.AllowUserToAddRows = false;
+			this.gridLocals.AllowUserToDeleteRows = false;
+			this.gridLocals.AllowUserToResizeRows = false;
+			this.gridLocals.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this.gridLocals.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+			this.gridLocals.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.NameColumn,
+            this.TypeColumn,
+            this.ValueColumn});
+			this.gridLocals.Location = new System.Drawing.Point(12, 376);
+			this.gridLocals.MultiSelect = false;
+			this.gridLocals.Name = "gridLocals";
+			this.gridLocals.Size = new System.Drawing.Size(835, 153);
+			this.gridLocals.TabIndex = 6;
+			this.gridLocals.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.gridLocals_CellEndEdit);
+			// 
+			// NameColumn
+			// 
+			this.NameColumn.HeaderText = "Name";
+			this.NameColumn.Name = "NameColumn";
+			this.NameColumn.ReadOnly = true;
+			this.NameColumn.Width = 150;
+			// 
+			// TypeColumn
+			// 
+			this.TypeColumn.HeaderText = "Type";
+			this.TypeColumn.Name = "TypeColumn";
+			this.TypeColumn.ReadOnly = true;
+			this.TypeColumn.Width = 150;
+			// 
+			// ValueColumn
+			// 
+			this.ValueColumn.HeaderText = "Value";
+			this.ValueColumn.Name = "ValueColumn";
+			this.ValueColumn.Width = 460;
+			// 
 			// FormMain
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(859, 554);
+			this.Controls.Add(this.gridLocals);
 			this.Controls.Add(this.listFiles);
-			this.Controls.Add(this.listLocals);
 			this.Controls.Add(this.toolStrip1);
 			this.Controls.Add(this.editor);
 			this.Controls.Add(this.statusStrip1);
@@ -209,6 +217,7 @@
 			this.statusStrip1.PerformLayout();
 			this.toolStrip1.ResumeLayout(false);
 			this.toolStrip1.PerformLayout();
+			((System.ComponentModel.ISupportInitialize)(this.gridLocals)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -224,13 +233,13 @@
 		private System.Windows.Forms.ToolStripButton buttonResume;
 		private System.Windows.Forms.ToolStripButton buttonStepOver;
 		private System.Windows.Forms.ToolStripButton buttonPause;
-		private System.Windows.Forms.ListView listLocals;
-		private System.Windows.Forms.ColumnHeader columnHeader1;
-		private System.Windows.Forms.ColumnHeader columnHeader2;
 		private System.Windows.Forms.ToolStripButton buttonStepOut;
-		private System.Windows.Forms.ColumnHeader columnHeader3;
 		private System.Windows.Forms.TreeView listFiles;
 		private System.Windows.Forms.ImageList imageList1;
+		private System.Windows.Forms.DataGridView gridLocals;
+		private System.Windows.Forms.DataGridViewTextBoxColumn NameColumn;
+		private System.Windows.Forms.DataGridViewTextBoxColumn TypeColumn;
+		private System.Windows.Forms.DataGridViewTextBoxColumn ValueColumn;
 	}
 }
 

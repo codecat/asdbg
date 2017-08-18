@@ -303,6 +303,64 @@ namespace dbg
 		free(filename);
 	}
 
+	static void ClientPacket_SetValue(EzSock* sock)
+	{
+		uint16_t lenName;
+		sock->Receive(&lenName, sizeof(uint16_t));
+
+		char* name = (char*)malloc(lenName + 1);
+		sock->Receive(name, lenName);
+		name[lenName] = '\0';
+
+		uint16_t lenValue;
+		sock->Receive(&lenValue, sizeof(uint16_t));
+
+		char* value = (char*)malloc(lenValue + 1);
+		sock->Receive(value, lenValue);
+		value[lenValue] = '\0';
+
+		int varIndex = -1;
+		int numVars = _ctx->GetVarCount();
+		for (int i = 0; i < numVars; i++) {
+			const char* varName = _ctx->GetVarName(i);
+			if (!strcmp(varName, name)) {
+				varIndex = i;
+				break;
+			}
+		}
+
+		if (varIndex != -1) {
+			Log("Changing local variable %s to %s", name, value);
+
+			void* varPtr = _ctx->GetAddressOfVar(varIndex);
+			int typeID = _ctx->GetVarTypeId(varIndex);
+
+			switch (typeID) {
+			case asTYPEID_BOOL: *(bool*)varPtr = (_stricmp(value, "true") == 0); break;
+
+			case asTYPEID_INT8: *(int8_t*)varPtr = std::stoi(value); break;
+			case asTYPEID_INT16: *(int16_t*)varPtr = std::stoi(value); break;
+			case asTYPEID_INT32: *(int32_t*)varPtr = std::stoi(value); break;
+			case asTYPEID_INT64: *(int64_t*)varPtr = std::stoll(value); break;
+
+			case asTYPEID_UINT8: *(uint8_t*)varPtr = (uint8_t)std::stoul(value); break;
+			case asTYPEID_UINT16: *(uint16_t*)varPtr = (uint16_t)std::stoul(value); break;
+			case asTYPEID_UINT32: *(uint32_t*)varPtr = std::stoul(value); break;
+			case asTYPEID_UINT64: *(uint64_t*)varPtr = std::stoull(value); break;
+
+			case asTYPEID_FLOAT: *(float*)varPtr = std::stof(value); break;
+			case asTYPEID_DOUBLE: *(double*)varPtr = std::stod(value); break;
+
+			default: /* .. */ break;
+			}
+		} else {
+			Log("Couldn't find local variable %s", name);
+		}
+
+		free(name);
+		free(value);
+	}
+
 	static void ClientThreadFunction(EzSock* sock)
 	{
 		Log("Connection accepted from: %s", inet_ntoa(sock->addr.sin_addr));
@@ -328,6 +386,7 @@ namespace dbg
 			case 3: ClientPacket_Resume(sock); break;
 			case 4: ClientPacket_AddBreakpoint(sock); break;
 			case 5: ClientPacket_DeleteBreakpoint(sock); break;
+			case 6: ClientPacket_SetValue(sock); break;
 			default: invalidPacket = true; break;
 			}
 
