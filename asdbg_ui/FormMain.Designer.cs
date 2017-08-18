@@ -27,6 +27,7 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
+			this.components = new System.ComponentModel.Container();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMain));
 			this.statusStrip1 = new System.Windows.Forms.StatusStrip();
 			this.labelStatus = new System.Windows.Forms.ToolStripStatusLabel();
@@ -39,8 +40,10 @@
 			this.buttonStepOut = new System.Windows.Forms.ToolStripButton();
 			this.listLocals = new System.Windows.Forms.ListView();
 			this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-			this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
 			this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+			this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+			this.listFiles = new System.Windows.Forms.TreeView();
+			this.imageList1 = new System.Windows.Forms.ImageList(this.components);
 			this.statusStrip1.SuspendLayout();
 			this.toolStrip1.SuspendLayout();
 			this.SuspendLayout();
@@ -51,7 +54,7 @@
             this.labelStatus});
 			this.statusStrip1.Location = new System.Drawing.Point(0, 532);
 			this.statusStrip1.Name = "statusStrip1";
-			this.statusStrip1.Size = new System.Drawing.Size(746, 22);
+			this.statusStrip1.Size = new System.Drawing.Size(859, 22);
 			this.statusStrip1.TabIndex = 0;
 			this.statusStrip1.Text = "statusStrip1";
 			// 
@@ -66,9 +69,9 @@
 			this.editor.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-			this.editor.Location = new System.Drawing.Point(12, 28);
+			this.editor.Location = new System.Drawing.Point(196, 28);
 			this.editor.Name = "editor";
-			this.editor.Size = new System.Drawing.Size(722, 342);
+			this.editor.Size = new System.Drawing.Size(651, 342);
 			this.editor.TabIndex = 2;
 			this.editor.MarginClick += new System.EventHandler<ScintillaNET.MarginClickEventArgs>(this.editor_MarginClick);
 			// 
@@ -82,7 +85,7 @@
             this.buttonStepOut});
 			this.toolStrip1.Location = new System.Drawing.Point(0, 0);
 			this.toolStrip1.Name = "toolStrip1";
-			this.toolStrip1.Size = new System.Drawing.Size(746, 25);
+			this.toolStrip1.Size = new System.Drawing.Size(859, 25);
 			this.toolStrip1.TabIndex = 3;
 			this.toolStrip1.Text = "toolStrip1";
 			// 
@@ -145,7 +148,7 @@
 			this.listLocals.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.listLocals.Location = new System.Drawing.Point(12, 376);
 			this.listLocals.Name = "listLocals";
-			this.listLocals.Size = new System.Drawing.Size(722, 153);
+			this.listLocals.Size = new System.Drawing.Size(835, 153);
 			this.listLocals.TabIndex = 4;
 			this.listLocals.UseCompatibleStateImageBehavior = false;
 			this.listLocals.View = System.Windows.Forms.View.Details;
@@ -155,21 +158,44 @@
 			this.columnHeader1.Text = "Name";
 			this.columnHeader1.Width = 150;
 			// 
-			// columnHeader2
-			// 
-			this.columnHeader2.Text = "Value";
-			this.columnHeader2.Width = 390;
-			// 
 			// columnHeader3
 			// 
 			this.columnHeader3.Text = "Type";
 			this.columnHeader3.Width = 150;
 			// 
+			// columnHeader2
+			// 
+			this.columnHeader2.Text = "Value";
+			this.columnHeader2.Width = 390;
+			// 
+			// listFiles
+			// 
+			this.listFiles.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
+			this.listFiles.FullRowSelect = true;
+			this.listFiles.ImageIndex = 0;
+			this.listFiles.ImageList = this.imageList1;
+			this.listFiles.Location = new System.Drawing.Point(12, 28);
+			this.listFiles.Name = "listFiles";
+			this.listFiles.SelectedImageIndex = 0;
+			this.listFiles.ShowLines = false;
+			this.listFiles.Size = new System.Drawing.Size(178, 342);
+			this.listFiles.TabIndex = 5;
+			this.listFiles.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.listFiles_AfterSelect);
+			// 
+			// imageList1
+			// 
+			this.imageList1.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imageList1.ImageStream")));
+			this.imageList1.TransparentColor = System.Drawing.Color.Transparent;
+			this.imageList1.Images.SetKeyName(0, "Folder");
+			this.imageList1.Images.SetKeyName(1, "Script");
+			// 
 			// FormMain
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(746, 554);
+			this.ClientSize = new System.Drawing.Size(859, 554);
+			this.Controls.Add(this.listFiles);
 			this.Controls.Add(this.listLocals);
 			this.Controls.Add(this.toolStrip1);
 			this.Controls.Add(this.editor);
@@ -201,6 +227,8 @@
 		private System.Windows.Forms.ColumnHeader columnHeader2;
 		private System.Windows.Forms.ToolStripButton buttonStepOut;
 		private System.Windows.Forms.ColumnHeader columnHeader3;
+		private System.Windows.Forms.TreeView listFiles;
+		private System.Windows.Forms.ImageList imageList1;
 	}
 }
 

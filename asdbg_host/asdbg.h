@@ -19,6 +19,7 @@ namespace dbg
 #include <atomic>
 #include <mutex>
 #include <condition_variable>
+#include <algorithm>
 
 #include <cstdint>
 
@@ -31,6 +32,7 @@ namespace dbg
 
 	static std::mutex _logMutex;
 	static std::mutex _clientsMutex;
+	static std::mutex _breakpointMutex;
 
 	static std::atomic<bool> _initialized = false;
 	static std::thread _networkThread;
@@ -42,6 +44,13 @@ namespace dbg
 	static std::mutex _dbgStateNotifyStepMutex;
 	static std::unique_lock<std::mutex> _dbgStateNotifyStepLock(_dbgStateNotifyStepMutex);
 	static std::condition_variable _dbgStateNotifyStep;
+
+	struct Breakpoint
+	{
+		std::string m_filename;
+		int m_line;
+	};
+	static std::vector<Breakpoint> _dbgStateBreakpoints;
 
 	static void Log(const char* format, ...)
 	{
@@ -81,6 +90,19 @@ namespace dbg
 		std::string ret = buffer;
 		free(buffer);
 		return ret;
+	}
+
+	static void Send_Path(EzSock* sock)
+	{
+		char path[1024];
+		GetCurrentDirectoryA(1024, path);
+
+		uint16_t packetType = 4;
+		sock->SendRaw(&packetType, sizeof(uint16_t));
+
+		uint16_t lenPath = (uint16_t)strlen(path);
+		sock->SendRaw(&lenPath, sizeof(uint16_t));
+		sock->SendRaw(path, lenPath);
 	}
 
 	static void Send_Location(EzSock* sock)
@@ -161,11 +183,11 @@ namespace dbg
 			break;
 		}
 
-		uint16_t lenTypeName = typeName.size();
+		uint16_t lenTypeName = (uint16_t)typeName.size();
 		sock->SendRaw(&lenTypeName, sizeof(uint16_t));
 		sock->SendRaw(typeName.c_str(), lenTypeName);
 
-		uint16_t lenValue = value.size();
+		uint16_t lenValue = (uint16_t)value.size();
 		sock->SendRaw(&lenValue, sizeof(uint16_t));
 		sock->SendRaw(value.c_str(), lenValue);
 	}
@@ -186,6 +208,18 @@ namespace dbg
 
 	static void ScriptLineCallback(asIScriptContext* ctx)
 	{
+		_breakpointMutex.lock();
+		for (auto &bp : _dbgStateBreakpoints) {
+			const char* filename = nullptr;
+			int line = ctx->GetLineNumber(0, nullptr, &filename);
+
+			if (bp.m_line == line && bp.m_filename == filename) {
+				_dbgStateBroken = true;
+				break;
+			}
+		}
+		_breakpointMutex.unlock();
+
 		if (!_dbgStateBroken) {
 			return;
 		}
@@ -221,17 +255,60 @@ namespace dbg
 
 	static void ClientPacket_AddBreakpoint(EzSock* sock)
 	{
-		//
+		uint16_t lenFilename;
+		sock->Receive(&lenFilename, sizeof(uint16_t));
+
+		char* filename = (char*)malloc(lenFilename + 1);
+		sock->Receive(filename, lenFilename);
+		filename[lenFilename] = '\0';
+
+		int line;
+		sock->Receive(&line, sizeof(int));
+
+		_breakpointMutex.lock();
+		Breakpoint bp;
+		bp.m_filename = filename;
+		bp.m_line = line;
+		_dbgStateBreakpoints.push_back(bp);
+		Log("Added breakpoint at %s line %d", filename, line);
+		_breakpointMutex.unlock();
+
+		free(filename);
 	}
 
 	static void ClientPacket_DeleteBreakpoint(EzSock* sock)
 	{
-		//
+		uint16_t lenFilename;
+		sock->Receive(&lenFilename, sizeof(uint16_t));
+
+		char* filename = (char*)malloc(lenFilename + 1);
+		sock->Receive(filename, lenFilename);
+		filename[lenFilename] = '\0';
+
+		int line;
+		sock->Receive(&line, sizeof(int));
+
+		_breakpointMutex.lock();
+		auto it = std::find_if(_dbgStateBreakpoints.begin(), _dbgStateBreakpoints.end(), [filename, line](const Breakpoint &bp) {
+			return (bp.m_line == line && bp.m_filename == filename);
+		});
+		if (it != _dbgStateBreakpoints.end()) {
+			Log("Erased breakpoint at %s line %d", it->m_filename.c_str(), it->m_line);
+			_dbgStateBreakpoints.erase(it);
+		} else {
+			Log("Couldn't find any breakpoint at %s line %d", filename, line);
+		}
+		_breakpointMutex.unlock();
+
+		free(filename);
 	}
 
 	static void ClientThreadFunction(EzSock* sock)
 	{
 		Log("Connection accepted from: %s", inet_ntoa(sock->addr.sin_addr));
+
+		Send_Path(sock);
+		//TODO: Send all existing breakpoints to client
 
 		if (_dbgStateBroken) {
 			Send_Location(sock);

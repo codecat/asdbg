@@ -27,7 +27,13 @@ namespace asdbg_ui
 
 		private Thread m_clientThread;
 
+		private string m_currentPath;
 		private string m_currentFile;
+
+		private string m_brokenFilename;
+		private int m_brokenLine;
+
+		private List<ScriptBreakpoint> m_breakpoints = new List<ScriptBreakpoint>();
 
 		public FormMain()
 		{
@@ -59,6 +65,11 @@ namespace asdbg_ui
 			editor.Markers[MARKER_BREAKPOINT].SetForeColor(Color.Black);
 		}
 
+		private string ProperPath(string path)
+		{
+			return path.Replace('\\', '/');
+		}
+
 		private int FindIndexOfLine(int line)
 		{
 			if (line == 1) {
@@ -84,20 +95,96 @@ namespace asdbg_ui
 			}));
 		}
 
+		private void AddPathNodes(string path, TreeNodeCollection nodes)
+		{
+			var dirs = Directory.GetDirectories(path);
+
+			foreach (var dir in dirs) {
+				if (Directory.GetFiles(dir, "*.as", SearchOption.AllDirectories).Length == 0) {
+					continue;
+				}
+
+				var node = nodes.Add(Path.GetFileName(dir));
+				node.Tag = ProperPath(dir);
+				node.SelectedImageKey = node.ImageKey = "Folder";
+				AddPathNodes(dir, node.Nodes);
+			}
+
+			var files = Directory.GetFiles(path, "*.as");
+
+			foreach (var file in files) {
+				var node = nodes.Add(Path.GetFileName(file));
+				node.Tag = ProperPath(file);
+				node.SelectedImageKey = node.ImageKey = "Script";
+			}
+		}
+
+		private void SetCurrentPath(string path)
+		{
+			Invoke(new Action(() => {
+				if (m_currentPath == path) {
+					return;
+				}
+
+				m_currentPath = path;
+				listFiles.Nodes.Clear();
+				AddPathNodes(path, listFiles.Nodes);
+			}));
+		}
+
+		private void SetCurrentLine(int line)
+		{
+			editor.MarkerDeleteAll(MARKER_CURRENTLINE);
+			editor.Lines[line - 1].MarkerAdd(MARKER_CURRENTLINE);
+		}
+
+		private void SetCurrentFile(string filename)
+		{
+			if (m_currentFile == filename) {
+				return;
+			}
+
+			m_currentFile = filename;
+
+			editor.MarkerDeleteAll(MARKER_BREAKPOINT);
+			editor.MarkerDeleteAll(MARKER_CURRENTLINE);
+
+			editor.Text = File.ReadAllText(filename);
+
+			foreach (var bp in m_breakpoints) {
+				if (bp.Filename != filename) {
+					break;
+				}
+				editor.Lines[bp.Line - 1].MarkerAdd(MARKER_BREAKPOINT);
+			}
+
+			//TODO: Focus on file in tree view here
+
+			if (m_brokenFilename == filename) {
+				SetCurrentLine(m_brokenLine);
+			}
+		}
+
 		private void SetCurrentPosition(string filename, int line, int column)
 		{
 			Invoke(new Action(() => {
-				if (m_currentFile != filename) {
-					m_currentFile = filename;
-					editor.Text = File.ReadAllText(filename);
-				}
+				m_brokenFilename = filename;
+				m_brokenLine = line;
 
-				editor.MarkerDeleteAll(MARKER_CURRENTLINE);
-				editor.Lines[line - 1].MarkerAdd(MARKER_CURRENTLINE);
+				SetCurrentFile(filename);
+				SetCurrentLine(line);
 
 				editor.SelectionEnd = editor.SelectionStart = FindIndexOfLine(line) + (column - 1);
 				editor.Focus();
 			}));
+		}
+
+		private void ServerPacket_Path()
+		{
+			ushort pathLength = m_reader.ReadUInt16();
+			string path = Encoding.UTF8.GetString(m_reader.ReadBytes(pathLength));
+
+			SetCurrentPath(path);
 		}
 
 		private void ServerPacket_Location()
@@ -144,6 +231,7 @@ namespace asdbg_ui
 					case 1: ServerPacket_Location(); break;
 					case 2: ServerPacket_ClearLocalVariables(); break;
 					case 3: ServerPacket_LocalVariable(); break;
+					case 4: ServerPacket_Path(); break;
 					default: SetStatus("Invalid packet type " + packetType + " received!"); break;
 				}
 			}
@@ -174,6 +262,7 @@ namespace asdbg_ui
 		private void buttonStep_Click(object sender, EventArgs e)
 		{
 			m_writer.Write((ushort)1);
+			editor.MarkerDeleteAll(MARKER_CURRENTLINE);
 		}
 
 		private void buttonPause_Click(object sender, EventArgs e)
@@ -184,20 +273,59 @@ namespace asdbg_ui
 		private void buttonResume_Click(object sender, EventArgs e)
 		{
 			m_writer.Write((ushort)3);
+			editor.MarkerDeleteAll(MARKER_CURRENTLINE);
+
+			m_brokenFilename = null;
+			m_brokenLine = 0;
+			listLocals.Items.Clear();
 		}
 
 		private void editor_MarginClick(object sender, MarginClickEventArgs e)
 		{
+			if (m_currentFile == null) {
+				return;
+			}
+
 			if (e.Margin == 0) {
-				var line = editor.Lines[editor.LineFromPosition(e.Position)];
+				var lineIndex = editor.LineFromPosition(e.Position);
+				var line = editor.Lines[lineIndex];
+
 				if ((line.MarkerGet() & (1u << MARKER_BREAKPOINT)) != 0) {
+					var bpIndex = m_breakpoints.FindIndex(bp => bp.Line == lineIndex + 1 && bp.Filename == m_currentFile);
+					if (bpIndex != -1) {
+						m_breakpoints.RemoveAt(bpIndex);
+					}
+
 					line.MarkerDelete(MARKER_BREAKPOINT);
 					m_writer.Write((ushort)5);
 				} else {
+					m_breakpoints.Add(new ScriptBreakpoint() {
+						Filename = m_currentFile,
+						Line = lineIndex + 1
+					});
+
 					line.MarkerAdd(MARKER_BREAKPOINT);
 					m_writer.Write((ushort)4);
 				}
+
+				m_writer.Write((ushort)m_currentFile.Length);
+				m_writer.Write(Encoding.UTF8.GetBytes(m_currentFile));
+				m_writer.Write(lineIndex + 1);
 			}
+		}
+
+		private void listFiles_AfterSelect(object sender, TreeViewEventArgs e)
+		{
+			if (e.Node == null || e.Node.ImageKey != "Script") {
+				return;
+			}
+
+			var filename = (string)e.Node.Tag;
+			if (filename == null) {
+				return;
+			}
+
+			SetCurrentFile(filename);
 		}
 	}
 }

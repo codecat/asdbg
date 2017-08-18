@@ -28,6 +28,11 @@ static void ScriptPrint(const std::string &str)
 	printf("%s\n", str.c_str());
 }
 
+static void ScriptSleep(int ms)
+{
+	Sleep(ms);
+}
+
 int main()
 {
 	asIScriptEngine* engine = asCreateScriptEngine();
@@ -42,6 +47,8 @@ int main()
 	RegisterStdStringUtils(engine);
 
 	engine->RegisterGlobalFunction("void print(const string &in)", asFUNCTION(ScriptPrint), asCALL_CDECL);
+	engine->RegisterGlobalFunction("void sleep(int ms)", asFUNCTION(ScriptSleep), asCALL_CDECL);
+
 	engine->RegisterGlobalFunction("void dbg_break()", asFUNCTION(dbg::Break), asCALL_CDECL);
 
 	CScriptBuilder builder;
@@ -57,7 +64,6 @@ int main()
 	asIScriptContext* ctx = engine->CreateContext();
 
 	dbg::Initialize(ctx);
-	dbg::Break();
 
 	ctx->Prepare(func);
 	ctx->Execute();
