@@ -75,6 +75,7 @@
 			this.editor.Size = new System.Drawing.Size(651, 342);
 			this.editor.TabIndex = 2;
 			this.editor.MarginClick += new System.EventHandler<ScintillaNET.MarginClickEventArgs>(this.editor_MarginClick);
+			this.editor.StyleNeeded += new System.EventHandler<ScintillaNET.StyleNeededEventArgs>(this.editor_StyleNeeded);
 			// 
 			// toolStrip1
 			// 

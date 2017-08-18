@@ -19,6 +19,8 @@ namespace asdbg_ui
 		private const int MARKER_CURRENTLINE = 0;
 		private const int MARKER_BREAKPOINT = 1;
 
+		private AngelscriptLexer m_lexer;
+
 		private TcpClient m_client;
 
 		private NetworkStream m_ns;
@@ -39,7 +41,21 @@ namespace asdbg_ui
 		{
 			InitializeComponent();
 
-			editor.Styles[0].Font = "Consolas";
+			m_lexer = new AngelscriptLexer();
+
+			foreach (var style in editor.Styles) {
+				style.Font = "Consolas";
+				style.Size = 10;
+			}
+			editor.Styles[AngelscriptLexer.StyleIdentifier].ForeColor = Color.DimGray;
+			editor.Styles[AngelscriptLexer.StyleConstant].ForeColor = Color.DeepPink;
+			editor.Styles[AngelscriptLexer.StyleString].ForeColor = Color.DarkRed;
+			editor.Styles[AngelscriptLexer.StyleStorageModifier].ForeColor = Color.DarkBlue;
+			editor.Styles[AngelscriptLexer.StyleStorageType].ForeColor = Color.DarkTurquoise;
+			editor.Styles[AngelscriptLexer.StyleVariable].ForeColor = Color.DarkBlue;
+			editor.Styles[AngelscriptLexer.StyleControl].ForeColor = Color.Red;
+
+			editor.TabWidth = 2;
 
 			foreach (var m in editor.Margins) {
 				m.Type = MarginType.BackColor;
@@ -351,6 +367,11 @@ namespace asdbg_ui
 
 			m_writer.Write((ushort)value.Length);
 			m_writer.Write(Encoding.UTF8.GetBytes(value));
+		}
+
+		private void editor_StyleNeeded(object sender, StyleNeededEventArgs e)
+		{
+			m_lexer.Style(editor, editor.GetEndStyled(), e.Position);
 		}
 	}
 }
