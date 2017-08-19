@@ -2,10 +2,18 @@
 
 #include <angelscript.h>
 
+#include <string>
+#include <functional>
+
 namespace dbg
 {
+	typedef std::function<std::string(void*)> FuncEncoder;
+	typedef std::function<void(void*, const char*)> FuncDecoder;
+
 	void Initialize(asIScriptContext* ctx);
 	void Release();
+
+	void Encoder(int typeID, FuncEncoder encoder, FuncDecoder decoder);
 
 	void Break();
 }
@@ -13,7 +21,6 @@ namespace dbg
 #ifdef ASDBG_IMPL
 
 #include <vector>
-#include <string>
 
 #include <thread>
 #include <atomic>
@@ -28,6 +35,13 @@ namespace dbg
 
 namespace dbg
 {
+	struct TypeEncoder
+	{
+		int m_typeID;
+		FuncEncoder m_encoder;
+		FuncDecoder m_decoder;
+	};
+
 	static asIScriptContext* _ctx = nullptr;
 
 	static std::mutex _logMutex;
@@ -38,6 +52,8 @@ namespace dbg
 	static std::thread _networkThread;
 	static std::vector<std::thread> _clientThreads;
 	static std::vector<EzSock*> _clientSockets;
+
+	static std::vector<TypeEncoder> _typeEncoders;
 
 	static std::atomic<bool> _dbgStateBroken = false;
 
@@ -178,7 +194,17 @@ namespace dbg
 					value = StrFormat("%p", ptr);
 				}
 			} else {
-				value = StrFormat("?? (%08X)", typeID);
+				bool found = false;
+				for (auto &typeEncoder : _typeEncoders) {
+					if (typeEncoder.m_typeID == typeID) {
+						value = typeEncoder.m_encoder(ptr);
+						found = true;
+						break;
+					}
+				}
+				if (!found) {
+					value = StrFormat("?? (%08X)", typeID);
+				}
 			}
 			break;
 		}
@@ -351,7 +377,19 @@ namespace dbg
 			case asTYPEID_FLOAT: *(float*)varPtr = std::stof(value); break;
 			case asTYPEID_DOUBLE: *(double*)varPtr = std::stod(value); break;
 
-			default: /* .. */ break;
+			default:
+				bool found = false;
+				for (auto &typeEncoder : _typeEncoders) {
+					if (typeEncoder.m_typeID == typeID) {
+						typeEncoder.m_decoder(varPtr, value);
+						found = true;
+						break;
+					}
+				}
+				if (!found) {
+					Log("Couldn't find decoder for type %08x", typeID);
+				}
+				break;
 			}
 		} else {
 			Log("Couldn't find local variable %s", name);
@@ -440,6 +478,7 @@ namespace dbg
 
 		_initialized = true;
 		_networkThread = std::thread(NetworkThreadFunction);
+		_typeEncoders.clear();
 	}
 
 	void Release()
@@ -452,6 +491,15 @@ namespace dbg
 		}
 		_clientsMutex.unlock();
 		_networkThread.join();
+	}
+
+	void Encoder(int typeID, FuncEncoder encoder, FuncDecoder decoder)
+	{
+		TypeEncoder typeEncoder;
+		typeEncoder.m_typeID = typeID;
+		typeEncoder.m_encoder = encoder;
+		typeEncoder.m_decoder = decoder;
+		_typeEncoders.push_back(typeEncoder);
 	}
 
 	void Break()

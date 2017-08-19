@@ -64,6 +64,11 @@ int main()
 	asIScriptContext* ctx = engine->CreateContext();
 
 	dbg::Initialize(ctx);
+	dbg::Encoder(engine->GetTypeIdByDecl("string"), [](void* ptr) {
+		return *(std::string*)ptr;
+	}, [](void* ptr, const char* set) {
+		*(std::string*)ptr = set;
+	});
 
 	ctx->Prepare(func);
 	ctx->Execute();
