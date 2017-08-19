@@ -129,6 +129,7 @@
 			this.buttonStepOver.Name = "buttonStepOver";
 			this.buttonStepOver.Size = new System.Drawing.Size(23, 22);
 			this.buttonStepOver.Text = "Step over";
+			this.buttonStepOver.Click += new System.EventHandler(this.buttonStepOver_Click);
 			// 
 			// buttonStepOut
 			// 

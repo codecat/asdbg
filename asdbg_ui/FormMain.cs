@@ -192,6 +192,7 @@ namespace asdbg_ui
 
 				editor.SelectionEnd = editor.SelectionStart = FindIndexOfLine(line) + (column - 1);
 				editor.Focus();
+				editor.ScrollCaret();
 			}));
 		}
 
@@ -282,6 +283,11 @@ namespace asdbg_ui
 		{
 			m_writer.Write((ushort)1);
 			editor.MarkerDeleteAll(MARKER_CURRENTLINE);
+		}
+
+		private void buttonStepOver_Click(object sender, EventArgs e)
+		{
+			m_writer.Write((ushort)7);
 		}
 
 		private void buttonPause_Click(object sender, EventArgs e)

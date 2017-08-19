@@ -45,7 +45,7 @@ engine->Release();
   - [ ] EzSock embedded
 - [ ] Stepping through code with a visual code view
   - [x] Step into
-  - [ ] Step over
+  - [x] Step over
   - [ ] Step out
 - [x] Breakpoints
 - [ ] View local variables

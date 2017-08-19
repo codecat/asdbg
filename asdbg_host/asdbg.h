@@ -56,6 +56,7 @@ namespace dbg
 	static std::vector<TypeEncoder> _typeEncoders;
 
 	static std::atomic<bool> _dbgStateBroken = false;
+	static std::atomic<int> _dbgStateBrokenDepth = -1;
 
 	static std::mutex _dbgStateNotifyStepMutex;
 	static std::unique_lock<std::mutex> _dbgStateNotifyStepLock(_dbgStateNotifyStepMutex);
@@ -194,16 +195,20 @@ namespace dbg
 					value = StrFormat("%p", ptr);
 				}
 			} else {
-				bool found = false;
-				for (auto &typeEncoder : _typeEncoders) {
-					if (typeEncoder.m_typeID == typeID) {
-						value = typeEncoder.m_encoder(ptr);
-						found = true;
-						break;
+				if (ptr == nullptr) {
+					value = "(null)";
+				} else {
+					bool found = false;
+					for (auto &typeEncoder : _typeEncoders) {
+						if (typeEncoder.m_typeID == typeID) {
+							value = typeEncoder.m_encoder(ptr);
+							found = true;
+							break;
+						}
 					}
-				}
-				if (!found) {
-					value = StrFormat("?? (%08X)", typeID);
+					if (!found) {
+						value = StrFormat("?? (%08X)", typeID);
+					}
 				}
 			}
 			break;
@@ -234,19 +239,42 @@ namespace dbg
 
 	static void ScriptLineCallback(asIScriptContext* ctx)
 	{
+		// Check breakpoints
+		bool breakPointHit = false;
 		_breakpointMutex.lock();
 		for (auto &bp : _dbgStateBreakpoints) {
 			const char* filename = nullptr;
 			int line = ctx->GetLineNumber(0, nullptr, &filename);
 
 			if (bp.m_line == line && bp.m_filename == filename) {
-				_dbgStateBroken = true;
+				breakPointHit = true;
 				break;
 			}
 		}
 		_breakpointMutex.unlock();
 
+		// If we hit a breakpoint on this line
+		if (breakPointHit) {
+			// Break now
+			_dbgStateBroken = true;
+		} else {
+			// Otherwise, check if we are stepping over
+			if (_dbgStateBrokenDepth != -1) {
+				// If we're still a frame ahead
+				if (ctx->GetCallstackSize() > _dbgStateBrokenDepth) {
+					// Continue execution
+					return;
+				} else {
+					// We've returned on our original frame, we should break now
+					_dbgStateBroken = true;
+					_dbgStateBrokenDepth = -1;
+				}
+			}
+		}
+
+		// If we're not broken
 		if (!_dbgStateBroken) {
+			// Continue execution
 			return;
 		}
 
@@ -257,11 +285,18 @@ namespace dbg
 		}
 		_clientsMutex.unlock();
 
+		// Wait for step notification
 		_dbgStateNotifyStep.wait(_dbgStateNotifyStepLock);
 	}
 
 	static void ClientPacket_Step(EzSock* sock)
 	{
+		_dbgStateNotifyStep.notify_one();
+	}
+
+	static void ClientPacket_StepOver(EzSock* sock)
+	{
+		_dbgStateBrokenDepth = _ctx->GetCallstackSize();
 		_dbgStateNotifyStep.notify_one();
 	}
 
@@ -425,6 +460,7 @@ namespace dbg
 			case 4: ClientPacket_AddBreakpoint(sock); break;
 			case 5: ClientPacket_DeleteBreakpoint(sock); break;
 			case 6: ClientPacket_SetValue(sock); break;
+			case 7: ClientPacket_StepOver(sock); break;
 			default: invalidPacket = true; break;
 			}
 
