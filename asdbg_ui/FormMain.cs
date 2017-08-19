@@ -290,6 +290,11 @@ namespace asdbg_ui
 			m_writer.Write((ushort)7);
 		}
 
+		private void buttonStepOut_Click(object sender, EventArgs e)
+		{
+			m_writer.Write((ushort)8);
+		}
+
 		private void buttonPause_Click(object sender, EventArgs e)
 		{
 			m_writer.Write((ushort)2);

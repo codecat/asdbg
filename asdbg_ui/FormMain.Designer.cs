@@ -139,6 +139,7 @@
 			this.buttonStepOut.Name = "buttonStepOut";
 			this.buttonStepOut.Size = new System.Drawing.Size(23, 22);
 			this.buttonStepOut.Text = "Step out";
+			this.buttonStepOut.Click += new System.EventHandler(this.buttonStepOut_Click);
 			// 
 			// listFiles
 			// 

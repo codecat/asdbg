@@ -300,6 +300,17 @@ namespace dbg
 		_dbgStateNotifyStep.notify_one();
 	}
 
+	static void ClientPacket_StepOut(EzSock* sock)
+	{
+		if (_ctx->GetCallstackSize() == 1) {
+			_dbgStateBroken = false;
+			_dbgStateNotifyStep.notify_one();
+			return;
+		}
+		_dbgStateBrokenDepth = _ctx->GetCallstackSize() - 1;
+		_dbgStateNotifyStep.notify_one();
+	}
+
 	static void ClientPacket_Pause(EzSock* sock)
 	{
 		_dbgStateBroken = true;
@@ -461,6 +472,7 @@ namespace dbg
 			case 5: ClientPacket_DeleteBreakpoint(sock); break;
 			case 6: ClientPacket_SetValue(sock); break;
 			case 7: ClientPacket_StepOver(sock); break;
+			case 8: ClientPacket_StepOut(sock); break;
 			default: invalidPacket = true; break;
 			}
 

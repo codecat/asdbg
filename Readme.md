@@ -43,10 +43,10 @@ engine->Release();
 - [ ] Single-header implementation in host application
   - [x] Everything in 1 header
   - [ ] EzSock embedded
-- [ ] Stepping through code with a visual code view
+- [x] Stepping through code with a visual code view
   - [x] Step into
   - [x] Step over
-  - [ ] Step out
+  - [x] Step out
 - [x] Breakpoints
 - [ ] View local variables
   - [x] Built-in types
