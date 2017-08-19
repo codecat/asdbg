@@ -148,7 +148,6 @@
     <ClInclude Include="addons\scriptmath\scriptmathcomplex.h" />
     <ClInclude Include="addons\scriptstdstring\scriptstdstring.h" />
     <ClInclude Include="asdbg.h" />
-    <ClInclude Include="ezsock.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

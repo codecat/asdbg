@@ -98,8 +98,5 @@
     <ClInclude Include="asdbg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ezsock.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>

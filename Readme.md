@@ -40,9 +40,7 @@ engine->Release();
 
 ## Goals
 
-- [ ] Single-header implementation in host application
-  - [x] Everything in 1 header
-  - [ ] EzSock embedded
+- [x] Single-header implementation in host application
 - [x] Stepping through code with a visual code view
   - [x] Step into
   - [x] Step over
