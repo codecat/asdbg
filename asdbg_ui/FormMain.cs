@@ -165,7 +165,11 @@ namespace asdbg_ui
 			editor.MarkerDeleteAll(MARKER_BREAKPOINT);
 			editor.MarkerDeleteAll(MARKER_CURRENTLINE);
 
-			editor.Text = File.ReadAllText(filename);
+			string absolutePath = filename;
+			if (!Path.IsPathRooted(absolutePath)) {
+				absolutePath = ProperPath(m_currentPath + "/" + filename);
+			}
+			editor.Text = File.ReadAllText(absolutePath);
 
 			foreach (var bp in m_breakpoints) {
 				if (bp.Filename != filename) {

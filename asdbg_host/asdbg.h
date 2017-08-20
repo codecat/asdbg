@@ -13,6 +13,10 @@ namespace dbg
 	void Initialize(asIScriptContext* ctx);
 	void Release();
 
+	bool IsInitialized();
+	asIScriptContext* GetContext();
+
+	void ScriptPath(const char* path);
 	void Encoder(int typeID, FuncEncoder encoder, FuncDecoder decoder);
 
 	void Break();
@@ -110,6 +114,7 @@ private:
 	bool check();
 };
 
+#ifndef EZSOCK_ALREADY_EXISTS
 #ifdef _MSC_VER
 #pragma comment(lib,"wsock32.lib")
 typedef int socklen_t;
@@ -318,6 +323,7 @@ int EzSock::SendRaw(const void* data, int dataSize)
 {
 	return send(this->sock, (char*)data, dataSize, 0);
 }
+#endif
 // End of EzSock
 ////////////////
 
@@ -331,6 +337,8 @@ namespace dbg
 	};
 
 	static asIScriptContext* _ctx = nullptr;
+
+	static std::string _scriptPath;
 
 	static std::mutex _logMutex;
 	static std::mutex _clientsMutex;
@@ -399,15 +407,12 @@ namespace dbg
 
 	static void Send_Path(EzSock* sock)
 	{
-		char path[1024];
-		GetCurrentDirectoryA(1024, path);
-
 		uint16_t packetType = 4;
 		sock->SendRaw(&packetType, sizeof(uint16_t));
 
-		uint16_t lenPath = (uint16_t)strlen(path);
+		uint16_t lenPath = (uint16_t)_scriptPath.size();
 		sock->SendRaw(&lenPath, sizeof(uint16_t));
-		sock->SendRaw(path, lenPath);
+		sock->SendRaw(_scriptPath.c_str(), lenPath);
 	}
 
 	static void Send_Location(EzSock* sock)
@@ -812,6 +817,10 @@ namespace dbg
 		_ctx = ctx;
 		_ctx->SetLineCallback(asFUNCTION(dbg::ScriptLineCallback), nullptr, asCALL_CDECL);
 
+		char path[1024];
+		GetCurrentDirectoryA(1024, path);
+		_scriptPath = path;
+
 		_initialized = true;
 		_networkThread = std::thread(NetworkThreadFunction);
 		_typeEncoders.clear();
@@ -827,6 +836,24 @@ namespace dbg
 		}
 		_clientsMutex.unlock();
 		_networkThread.join();
+
+		_ctx->ClearLineCallback();
+		_ctx = nullptr;
+	}
+
+	bool IsInitialized()
+	{
+		return _initialized;
+	}
+
+	asIScriptContext* GetContext()
+	{
+		return _ctx;
+	}
+
+	void ScriptPath(const char* path)
+	{
+		_scriptPath = path;
 	}
 
 	void Encoder(int typeID, FuncEncoder encoder, FuncDecoder decoder)
