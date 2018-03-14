@@ -58,4 +58,4 @@ engine->Release();
 
 MIT license:
 
-Copyright (c) github.com/codecat 2017
+Copyright (c) github.com/codecat 2017 - 2018
