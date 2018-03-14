@@ -541,7 +541,7 @@ namespace dbg
 			const char* filename = nullptr;
 			int line = ctx->GetLineNumber(0, nullptr, &filename);
 
-			if (bp.m_line == line && !strcmp(bp.m_filename.c_str() + _scriptPath.size(), filename)) {
+			if (bp.m_line == line && !strcmp(bp.m_filename.c_str() + bp.m_filename.size() - strlen(filename), filename)) {
 				breakPointHit = true;
 				break;
 			}

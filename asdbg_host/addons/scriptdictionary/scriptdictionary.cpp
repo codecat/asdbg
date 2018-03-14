@@ -695,7 +695,7 @@ bool CScriptDictValue::Get(asIScriptEngine *engine, void *value, int typeId) con
 		bool isCompatible = false;
 
 		// Allow a handle to be value assigned if the wanted type is not a handle
-		if( (m_typeId & ~asTYPEID_OBJHANDLE) == typeId && m_valueObj != 0 )
+		if( (m_typeId & ~(asTYPEID_OBJHANDLE | asTYPEID_HANDLETOCONST) ) == typeId && m_valueObj != 0 )
 			isCompatible = true;
 
 		// Copy the object into the given reference
@@ -1040,6 +1040,7 @@ void RegisterScriptDictionary_Native(asIScriptEngine *engine)
 
 	r = engine->RegisterObjectMethod("dictionary", "bool exists(const string &in) const", asMETHOD(CScriptDictionary,Exists), asCALL_THISCALL); assert( r >= 0 );
 	r = engine->RegisterObjectMethod("dictionary", "bool isEmpty() const", asMETHOD(CScriptDictionary, IsEmpty), asCALL_THISCALL); assert( r >= 0 );
+	// TODO: Register as size() for consistency with other types
 	r = engine->RegisterObjectMethod("dictionary", "uint getSize() const", asMETHOD(CScriptDictionary, GetSize), asCALL_THISCALL); assert( r >= 0 );
 	r = engine->RegisterObjectMethod("dictionary", "bool delete(const string &in)", asMETHOD(CScriptDictionary,Delete), asCALL_THISCALL); assert( r >= 0 );
 	r = engine->RegisterObjectMethod("dictionary", "void deleteAll()", asMETHOD(CScriptDictionary,DeleteAll), asCALL_THISCALL); assert( r >= 0 );
