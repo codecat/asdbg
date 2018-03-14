@@ -532,6 +532,35 @@ namespace dbg
 		}
 	}
 
+	static void Send_Callstack(AsDbgEzSock* sock)
+	{
+		uint16_t packetType = 5;
+		sock->SendRaw(&packetType, sizeof(uint16_t));
+
+		uint16_t stackSize = _ctx->GetCallstackSize();
+		sock->SendRaw(&stackSize, sizeof(uint16_t));
+		for (int i = 0; i < stackSize; i++) {
+			const char* filename = nullptr;
+			int line = _ctx->GetLineNumber(i, nullptr, &filename);
+			asIScriptFunction* func = _ctx->GetFunction(i);
+
+			std::string decl;
+			if (func != nullptr) {
+				decl = func->GetDeclaration(true, true, true);
+			}
+
+			uint16_t lenDecl = decl.size();
+			sock->SendRaw(&lenDecl, sizeof(uint16_t));
+			sock->SendRaw(decl.c_str(), lenDecl);
+
+			uint16_t lenFilename = strlen(filename);
+			sock->SendRaw(&lenFilename, sizeof(uint16_t));
+			sock->SendRaw(filename, lenFilename);
+
+			sock->SendRaw(&line, sizeof(int));
+		}
+	}
+
 	static void ScriptLineCallback(asIScriptContext* ctx)
 	{
 		// Check breakpoints
@@ -576,6 +605,7 @@ namespace dbg
 		_clientsMutex.lock();
 		for (AsDbgEzSock* sock : _clientSockets) {
 			Send_Location(sock);
+			Send_Callstack(sock);
 			Send_AllLocals(sock);
 		}
 		_clientsMutex.unlock();

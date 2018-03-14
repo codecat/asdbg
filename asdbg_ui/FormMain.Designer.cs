@@ -44,18 +44,29 @@
 			this.NameColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.TypeColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.ValueColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.tabControl1 = new System.Windows.Forms.TabControl();
+			this.tabLocals = new System.Windows.Forms.TabPage();
+			this.tabCallstack = new System.Windows.Forms.TabPage();
+			this.gridCallstack = new System.Windows.Forms.DataGridView();
+			this.dataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.dataGridViewTextBoxColumn2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.dataGridViewTextBoxColumn3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.statusStrip1.SuspendLayout();
 			this.toolStrip1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.gridLocals)).BeginInit();
+			this.tabControl1.SuspendLayout();
+			this.tabLocals.SuspendLayout();
+			this.tabCallstack.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.gridCallstack)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// statusStrip1
 			// 
 			this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.labelStatus});
-			this.statusStrip1.Location = new System.Drawing.Point(0, 532);
+			this.statusStrip1.Location = new System.Drawing.Point(0, 552);
 			this.statusStrip1.Name = "statusStrip1";
-			this.statusStrip1.Size = new System.Drawing.Size(859, 22);
+			this.statusStrip1.Size = new System.Drawing.Size(887, 22);
 			this.statusStrip1.TabIndex = 0;
 			this.statusStrip1.Text = "statusStrip1";
 			// 
@@ -72,7 +83,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
 			this.editor.Location = new System.Drawing.Point(196, 28);
 			this.editor.Name = "editor";
-			this.editor.Size = new System.Drawing.Size(651, 342);
+			this.editor.Size = new System.Drawing.Size(679, 362);
 			this.editor.TabIndex = 2;
 			this.editor.MarginClick += new System.EventHandler<ScintillaNET.MarginClickEventArgs>(this.editor_MarginClick);
 			this.editor.StyleNeeded += new System.EventHandler<ScintillaNET.StyleNeededEventArgs>(this.editor_StyleNeeded);
@@ -87,7 +98,7 @@
             this.buttonStepOut});
 			this.toolStrip1.Location = new System.Drawing.Point(0, 0);
 			this.toolStrip1.Name = "toolStrip1";
-			this.toolStrip1.Size = new System.Drawing.Size(859, 25);
+			this.toolStrip1.Size = new System.Drawing.Size(887, 25);
 			this.toolStrip1.TabIndex = 3;
 			this.toolStrip1.Text = "toolStrip1";
 			// 
@@ -152,7 +163,7 @@
 			this.listFiles.Name = "listFiles";
 			this.listFiles.SelectedImageIndex = 0;
 			this.listFiles.ShowLines = false;
-			this.listFiles.Size = new System.Drawing.Size(178, 342);
+			this.listFiles.Size = new System.Drawing.Size(178, 362);
 			this.listFiles.TabIndex = 5;
 			this.listFiles.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.listFiles_AfterSelect);
 			// 
@@ -168,17 +179,16 @@
 			this.gridLocals.AllowUserToAddRows = false;
 			this.gridLocals.AllowUserToDeleteRows = false;
 			this.gridLocals.AllowUserToResizeRows = false;
-			this.gridLocals.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
 			this.gridLocals.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
 			this.gridLocals.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.NameColumn,
             this.TypeColumn,
             this.ValueColumn});
-			this.gridLocals.Location = new System.Drawing.Point(12, 376);
+			this.gridLocals.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.gridLocals.Location = new System.Drawing.Point(3, 3);
 			this.gridLocals.MultiSelect = false;
 			this.gridLocals.Name = "gridLocals";
-			this.gridLocals.Size = new System.Drawing.Size(835, 153);
+			this.gridLocals.Size = new System.Drawing.Size(849, 121);
 			this.gridLocals.TabIndex = 6;
 			this.gridLocals.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.gridLocals_CellEndEdit);
 			// 
@@ -202,12 +212,85 @@
 			this.ValueColumn.Name = "ValueColumn";
 			this.ValueColumn.Width = 460;
 			// 
+			// tabControl1
+			// 
+			this.tabControl1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this.tabControl1.Controls.Add(this.tabCallstack);
+			this.tabControl1.Controls.Add(this.tabLocals);
+			this.tabControl1.Location = new System.Drawing.Point(12, 396);
+			this.tabControl1.Name = "tabControl1";
+			this.tabControl1.SelectedIndex = 0;
+			this.tabControl1.Size = new System.Drawing.Size(863, 153);
+			this.tabControl1.TabIndex = 7;
+			// 
+			// tabLocals
+			// 
+			this.tabLocals.Controls.Add(this.gridLocals);
+			this.tabLocals.Location = new System.Drawing.Point(4, 22);
+			this.tabLocals.Name = "tabLocals";
+			this.tabLocals.Padding = new System.Windows.Forms.Padding(3);
+			this.tabLocals.Size = new System.Drawing.Size(855, 127);
+			this.tabLocals.TabIndex = 0;
+			this.tabLocals.Text = "Locals";
+			this.tabLocals.UseVisualStyleBackColor = true;
+			// 
+			// tabCallstack
+			// 
+			this.tabCallstack.Controls.Add(this.gridCallstack);
+			this.tabCallstack.Location = new System.Drawing.Point(4, 22);
+			this.tabCallstack.Name = "tabCallstack";
+			this.tabCallstack.Padding = new System.Windows.Forms.Padding(3);
+			this.tabCallstack.Size = new System.Drawing.Size(855, 127);
+			this.tabCallstack.TabIndex = 1;
+			this.tabCallstack.Text = "Callstack";
+			this.tabCallstack.UseVisualStyleBackColor = true;
+			// 
+			// gridCallstack
+			// 
+			this.gridCallstack.AllowUserToAddRows = false;
+			this.gridCallstack.AllowUserToDeleteRows = false;
+			this.gridCallstack.AllowUserToResizeRows = false;
+			this.gridCallstack.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+			this.gridCallstack.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.dataGridViewTextBoxColumn1,
+            this.dataGridViewTextBoxColumn2,
+            this.dataGridViewTextBoxColumn3});
+			this.gridCallstack.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.gridCallstack.Location = new System.Drawing.Point(3, 3);
+			this.gridCallstack.MultiSelect = false;
+			this.gridCallstack.Name = "gridCallstack";
+			this.gridCallstack.ReadOnly = true;
+			this.gridCallstack.Size = new System.Drawing.Size(849, 121);
+			this.gridCallstack.TabIndex = 7;
+			// 
+			// dataGridViewTextBoxColumn1
+			// 
+			this.dataGridViewTextBoxColumn1.HeaderText = "Declaration";
+			this.dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
+			this.dataGridViewTextBoxColumn1.ReadOnly = true;
+			this.dataGridViewTextBoxColumn1.Width = 350;
+			// 
+			// dataGridViewTextBoxColumn2
+			// 
+			this.dataGridViewTextBoxColumn2.HeaderText = "Filename";
+			this.dataGridViewTextBoxColumn2.Name = "dataGridViewTextBoxColumn2";
+			this.dataGridViewTextBoxColumn2.ReadOnly = true;
+			this.dataGridViewTextBoxColumn2.Width = 350;
+			// 
+			// dataGridViewTextBoxColumn3
+			// 
+			this.dataGridViewTextBoxColumn3.HeaderText = "Line";
+			this.dataGridViewTextBoxColumn3.Name = "dataGridViewTextBoxColumn3";
+			this.dataGridViewTextBoxColumn3.ReadOnly = true;
+			this.dataGridViewTextBoxColumn3.Width = 80;
+			// 
 			// FormMain
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(859, 554);
-			this.Controls.Add(this.gridLocals);
+			this.ClientSize = new System.Drawing.Size(887, 574);
+			this.Controls.Add(this.tabControl1);
 			this.Controls.Add(this.listFiles);
 			this.Controls.Add(this.toolStrip1);
 			this.Controls.Add(this.editor);
@@ -221,6 +304,10 @@
 			this.toolStrip1.ResumeLayout(false);
 			this.toolStrip1.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this.gridLocals)).EndInit();
+			this.tabControl1.ResumeLayout(false);
+			this.tabLocals.ResumeLayout(false);
+			this.tabCallstack.ResumeLayout(false);
+			((System.ComponentModel.ISupportInitialize)(this.gridCallstack)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -243,6 +330,13 @@
 		private System.Windows.Forms.DataGridViewTextBoxColumn NameColumn;
 		private System.Windows.Forms.DataGridViewTextBoxColumn TypeColumn;
 		private System.Windows.Forms.DataGridViewTextBoxColumn ValueColumn;
+		private System.Windows.Forms.TabControl tabControl1;
+		private System.Windows.Forms.TabPage tabLocals;
+		private System.Windows.Forms.TabPage tabCallstack;
+		private System.Windows.Forms.DataGridView gridCallstack;
+		private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn1;
+		private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn2;
+		private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn3;
 	}
 }
 

@@ -242,6 +242,36 @@ namespace asdbg_ui
 			}));
 		}
 
+		private void ServerPacket_Callstack()
+		{
+			ushort numCalls = m_reader.ReadUInt16();
+
+			List<ScriptStackFrame> frames = new List<ScriptStackFrame>();
+
+			for (ushort i = 0; i < numCalls; i++) {
+				ushort declLength = m_reader.ReadUInt16();
+				string decl = Encoding.UTF8.GetString(m_reader.ReadBytes(declLength));
+
+				ushort filenameLength = m_reader.ReadUInt16();
+				string filename = Encoding.UTF8.GetString(m_reader.ReadBytes(filenameLength));
+
+				int line = m_reader.ReadInt32();
+
+				frames.Add(new ScriptStackFrame() {
+					Declaration = decl,
+					Filename = filename,
+					Line = line
+				});
+			}
+
+			Invoke(new Action(() => {
+				gridCallstack.Rows.Clear();
+				foreach (var frame in frames) {
+					gridCallstack.Rows.Add(frame.Declaration, frame.Filename, frame.Line);
+				}
+			}));
+		}
+
 		private void ClientThreadFunction()
 		{
 			while (true) {
@@ -252,6 +282,7 @@ namespace asdbg_ui
 						case 2: ServerPacket_ClearLocalVariables(); break;
 						case 3: ServerPacket_LocalVariable(); break;
 						case 4: ServerPacket_Path(); break;
+						case 5: ServerPacket_Callstack(); break;
 						default: SetStatus("Invalid packet type " + packetType + " received!"); break;
 					}
 				} catch (IOException) {
