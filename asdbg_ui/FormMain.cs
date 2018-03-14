@@ -106,9 +106,12 @@ namespace asdbg_ui
 
 		private void SetStatus(string status)
 		{
-			Invoke(new Action(() => {
-				labelStatus.Text = status;
-			}));
+			// We need to try/catch this because WinForms sucks.
+			try {
+				Invoke(new Action(() => {
+					labelStatus.Text = status;
+				}));
+			} catch { }
 		}
 
 		private void AddPathNodes(string path, TreeNodeCollection nodes)
@@ -172,7 +175,7 @@ namespace asdbg_ui
 			editor.Text = File.ReadAllText(absolutePath);
 
 			foreach (var bp in m_breakpoints) {
-				if (bp.Filename != filename) {
+				if (!bp.Filename.EndsWith(filename)) {
 					break;
 				}
 				editor.Lines[bp.Line - 1].MarkerAdd(MARKER_BREAKPOINT);
@@ -198,6 +201,14 @@ namespace asdbg_ui
 				editor.Focus();
 				editor.ScrollCaret();
 			}));
+		}
+
+		private void RefreshBreakpointsList()
+		{
+			gridBreakpoints.Rows.Clear();
+			foreach (var bp in m_breakpoints) {
+				gridBreakpoints.Rows.Add(bp.Filename, bp.Line);
+			}
 		}
 
 		private void ServerPacket_Path()
@@ -272,6 +283,26 @@ namespace asdbg_ui
 			}));
 		}
 
+		private void ServerPacket_BreakpointList()
+		{
+			m_breakpoints.Clear();
+
+			ushort numBreakpoints = m_reader.ReadUInt16();
+			for (ushort i = 0; i < numBreakpoints; i++) {
+				ushort filenameLength = m_reader.ReadUInt16();
+				string filename = Encoding.UTF8.GetString(m_reader.ReadBytes(filenameLength));
+
+				int line = m_reader.ReadInt32();
+
+				m_breakpoints.Add(new ScriptBreakpoint() {
+					Filename = filename,
+					Line = line
+				});
+			}
+
+			Invoke(new Action(RefreshBreakpointsList));
+		}
+
 		private void ClientThreadFunction()
 		{
 			while (true) {
@@ -283,6 +314,7 @@ namespace asdbg_ui
 						case 3: ServerPacket_LocalVariable(); break;
 						case 4: ServerPacket_Path(); break;
 						case 5: ServerPacket_Callstack(); break;
+						case 6: ServerPacket_BreakpointList(); break;
 						default: SetStatus("Invalid packet type " + packetType + " received!"); break;
 					}
 				} catch (IOException) {
@@ -342,7 +374,9 @@ namespace asdbg_ui
 
 			m_brokenFilename = null;
 			m_brokenLine = 0;
+
 			gridLocals.Rows.Clear();
+			gridCallstack.Rows.Clear();
 
 			SetStatus("Resumed.");
 		}
@@ -378,6 +412,8 @@ namespace asdbg_ui
 				m_writer.Write((ushort)m_currentFile.Length);
 				m_writer.Write(Encoding.UTF8.GetBytes(m_currentFile));
 				m_writer.Write(lineIndex + 1);
+
+				RefreshBreakpointsList();
 			}
 		}
 
@@ -418,6 +454,19 @@ namespace asdbg_ui
 		private void editor_StyleNeeded(object sender, StyleNeededEventArgs e)
 		{
 			m_lexer.Style(editor, editor.GetEndStyled(), e.Position);
+		}
+
+		private void gridBreakpoints_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+		{
+			var row = gridBreakpoints.Rows[e.RowIndex];
+			var filename = (string)row.Cells[0].Value;
+			var line = (int)row.Cells[1].Value;
+
+			SetCurrentFile(filename);
+
+			editor.SelectionEnd = editor.SelectionStart = FindIndexOfLine(line);
+			editor.Focus();
+			editor.ScrollCaret();
 		}
 	}
 }

@@ -561,6 +561,24 @@ namespace dbg
 		}
 	}
 
+	static void Send_Breakpoints(AsDbgEzSock* sock)
+	{
+		uint16_t packetType = 6;
+		sock->SendRaw(&packetType, sizeof(uint16_t));
+
+		_breakpointMutex.lock();
+		uint16_t numBreakpoints = (uint16_t)_dbgStateBreakpoints.size();
+		sock->SendRaw(&numBreakpoints, sizeof(uint16_t));
+		for (auto &bp : _dbgStateBreakpoints) {
+			uint16_t lenFilename = (uint16_t)bp.m_filename.size();
+			sock->SendRaw(&lenFilename, sizeof(uint16_t));
+			sock->SendRaw(bp.m_filename.c_str(), lenFilename);
+
+			sock->SendRaw(&bp.m_line, sizeof(int));
+		}
+		_breakpointMutex.unlock();
+	}
+
 	static void ScriptLineCallback(asIScriptContext* ctx)
 	{
 		// Check breakpoints
@@ -775,7 +793,7 @@ namespace dbg
 		Log("Connection accepted from: %s", inet_ntoa(sock->addr.sin_addr));
 
 		Send_Path(sock);
-		//TODO: Send all existing breakpoints to client
+		Send_Breakpoints(sock);
 
 		if (_dbgStateBroken) {
 			Send_Location(sock);
@@ -785,6 +803,10 @@ namespace dbg
 		while (_initialized) {
 			uint16_t packetType = 0;
 			if (sock->Receive(&packetType, sizeof(uint32_t)) == -1) {
+				break;
+			}
+
+			if (packetType == 0) {
 				break;
 			}
 
@@ -802,7 +824,7 @@ namespace dbg
 			}
 
 			if (invalidPacket) {
-				Log("Invalid packet type received from client");
+				Log("Invalid packet type received from client: %hu", packetType);
 				break;
 			}
 		}

@@ -45,19 +45,25 @@
 			this.TypeColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.ValueColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.tabControl1 = new System.Windows.Forms.TabControl();
-			this.tabLocals = new System.Windows.Forms.TabPage();
 			this.tabCallstack = new System.Windows.Forms.TabPage();
 			this.gridCallstack = new System.Windows.Forms.DataGridView();
 			this.dataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.dataGridViewTextBoxColumn2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.dataGridViewTextBoxColumn3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.tabLocals = new System.Windows.Forms.TabPage();
+			this.tabBreakpoints = new System.Windows.Forms.TabPage();
+			this.gridBreakpoints = new System.Windows.Forms.DataGridView();
+			this.dataGridViewTextBoxColumn5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.dataGridViewTextBoxColumn6 = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.statusStrip1.SuspendLayout();
 			this.toolStrip1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.gridLocals)).BeginInit();
 			this.tabControl1.SuspendLayout();
-			this.tabLocals.SuspendLayout();
 			this.tabCallstack.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.gridCallstack)).BeginInit();
+			this.tabLocals.SuspendLayout();
+			this.tabBreakpoints.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.gridBreakpoints)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// statusStrip1
@@ -218,22 +224,12 @@
             | System.Windows.Forms.AnchorStyles.Right)));
 			this.tabControl1.Controls.Add(this.tabCallstack);
 			this.tabControl1.Controls.Add(this.tabLocals);
+			this.tabControl1.Controls.Add(this.tabBreakpoints);
 			this.tabControl1.Location = new System.Drawing.Point(12, 396);
 			this.tabControl1.Name = "tabControl1";
 			this.tabControl1.SelectedIndex = 0;
 			this.tabControl1.Size = new System.Drawing.Size(863, 153);
 			this.tabControl1.TabIndex = 7;
-			// 
-			// tabLocals
-			// 
-			this.tabLocals.Controls.Add(this.gridLocals);
-			this.tabLocals.Location = new System.Drawing.Point(4, 22);
-			this.tabLocals.Name = "tabLocals";
-			this.tabLocals.Padding = new System.Windows.Forms.Padding(3);
-			this.tabLocals.Size = new System.Drawing.Size(855, 127);
-			this.tabLocals.TabIndex = 0;
-			this.tabLocals.Text = "Locals";
-			this.tabLocals.UseVisualStyleBackColor = true;
 			// 
 			// tabCallstack
 			// 
@@ -285,6 +281,60 @@
 			this.dataGridViewTextBoxColumn3.ReadOnly = true;
 			this.dataGridViewTextBoxColumn3.Width = 80;
 			// 
+			// tabLocals
+			// 
+			this.tabLocals.Controls.Add(this.gridLocals);
+			this.tabLocals.Location = new System.Drawing.Point(4, 22);
+			this.tabLocals.Name = "tabLocals";
+			this.tabLocals.Padding = new System.Windows.Forms.Padding(3);
+			this.tabLocals.Size = new System.Drawing.Size(855, 127);
+			this.tabLocals.TabIndex = 0;
+			this.tabLocals.Text = "Locals";
+			this.tabLocals.UseVisualStyleBackColor = true;
+			// 
+			// tabBreakpoints
+			// 
+			this.tabBreakpoints.Controls.Add(this.gridBreakpoints);
+			this.tabBreakpoints.Location = new System.Drawing.Point(4, 22);
+			this.tabBreakpoints.Name = "tabBreakpoints";
+			this.tabBreakpoints.Padding = new System.Windows.Forms.Padding(3);
+			this.tabBreakpoints.Size = new System.Drawing.Size(855, 127);
+			this.tabBreakpoints.TabIndex = 2;
+			this.tabBreakpoints.Text = "Breakpoints";
+			this.tabBreakpoints.UseVisualStyleBackColor = true;
+			// 
+			// gridBreakpoints
+			// 
+			this.gridBreakpoints.AllowUserToAddRows = false;
+			this.gridBreakpoints.AllowUserToDeleteRows = false;
+			this.gridBreakpoints.AllowUserToResizeRows = false;
+			this.gridBreakpoints.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+			this.gridBreakpoints.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.dataGridViewTextBoxColumn5,
+            this.dataGridViewTextBoxColumn6});
+			this.gridBreakpoints.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.gridBreakpoints.Location = new System.Drawing.Point(3, 3);
+			this.gridBreakpoints.MultiSelect = false;
+			this.gridBreakpoints.Name = "gridBreakpoints";
+			this.gridBreakpoints.ReadOnly = true;
+			this.gridBreakpoints.Size = new System.Drawing.Size(849, 121);
+			this.gridBreakpoints.TabIndex = 8;
+			this.gridBreakpoints.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.gridBreakpoints_CellDoubleClick);
+			// 
+			// dataGridViewTextBoxColumn5
+			// 
+			this.dataGridViewTextBoxColumn5.HeaderText = "Filename";
+			this.dataGridViewTextBoxColumn5.Name = "dataGridViewTextBoxColumn5";
+			this.dataGridViewTextBoxColumn5.ReadOnly = true;
+			this.dataGridViewTextBoxColumn5.Width = 550;
+			// 
+			// dataGridViewTextBoxColumn6
+			// 
+			this.dataGridViewTextBoxColumn6.HeaderText = "Line";
+			this.dataGridViewTextBoxColumn6.Name = "dataGridViewTextBoxColumn6";
+			this.dataGridViewTextBoxColumn6.ReadOnly = true;
+			this.dataGridViewTextBoxColumn6.Width = 80;
+			// 
 			// FormMain
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -305,9 +355,11 @@
 			this.toolStrip1.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this.gridLocals)).EndInit();
 			this.tabControl1.ResumeLayout(false);
-			this.tabLocals.ResumeLayout(false);
 			this.tabCallstack.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.gridCallstack)).EndInit();
+			this.tabLocals.ResumeLayout(false);
+			this.tabBreakpoints.ResumeLayout(false);
+			((System.ComponentModel.ISupportInitialize)(this.gridBreakpoints)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -337,6 +389,10 @@
 		private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn1;
 		private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn2;
 		private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn3;
+		private System.Windows.Forms.TabPage tabBreakpoints;
+		private System.Windows.Forms.DataGridView gridBreakpoints;
+		private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn5;
+		private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn6;
 	}
 }
 
