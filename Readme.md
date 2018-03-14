@@ -51,7 +51,8 @@ engine->Release();
   - [x] Custom types
   - [ ] Arrays
   - [ ] Dictionaries
-- [ ] View stack trace and inspect each frame individually
+- [x] View stack trace
+- [ ] Inspect each frame individually
 
 ## License
 
