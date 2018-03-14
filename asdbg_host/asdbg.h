@@ -16,6 +16,7 @@ namespace dbg
 	bool IsInitialized();
 	asIScriptContext* GetContext();
 
+	std::string ScriptPath();
 	void ScriptPath(const char* path);
 	void Encoder(int typeID, FuncEncoder encoder, FuncDecoder decoder);
 
@@ -44,6 +45,7 @@ namespace dbg
 #include <sstream>
 #include <fcntl.h>
 #include <ctype.h>
+#include <cstring>
 
 #ifdef _MSC_VER
 #include <winsock2.h>
@@ -51,7 +53,7 @@ namespace dbg
 #include <netinet/in.h>
 #endif
 
-class EzSock
+class AsDbgEzSock
 {
 public:
 	enum SockState
@@ -78,15 +80,15 @@ public:
 
 	int lastCode;
 
-	EzSock();
-	~EzSock();
+	AsDbgEzSock();
+	~AsDbgEzSock();
 
 	bool create();
 	bool create(int Protocol);
 	bool create(int Protocol, int Type);
 	bool bind(unsigned short port);
 	bool listen();
-	bool accept(EzSock* socket);
+	bool accept(AsDbgEzSock* socket);
 	int connect(const char* host, unsigned short port);
 	void close();
 
@@ -137,7 +139,7 @@ typedef int socklen_t;
 #define INVALID_SOCKET -1
 #endif
 
-EzSock::EzSock()
+AsDbgEzSock::AsDbgEzSock()
 {
 	MAXCON = 64;
 	memset(&addr, 0, sizeof(addr));
@@ -157,7 +159,7 @@ EzSock::EzSock()
 	this->totaldata = 0;
 }
 
-EzSock::~EzSock()
+AsDbgEzSock::~AsDbgEzSock()
 {
 	if (this->check())
 		close();
@@ -166,17 +168,17 @@ EzSock::~EzSock()
 	delete times;
 }
 
-bool EzSock::check()
+bool AsDbgEzSock::check()
 {
 	return sock > SOCKET_NONE;
 }
 
-bool EzSock::create()
+bool AsDbgEzSock::create()
 {
 	return this->create(IPPROTO_TCP, SOCK_STREAM);
 }
 
-bool EzSock::create(int Protocol)
+bool AsDbgEzSock::create(int Protocol)
 {
 	switch (Protocol) {
 	case IPPROTO_TCP: return this->create(IPPROTO_TCP, SOCK_STREAM);
@@ -185,7 +187,7 @@ bool EzSock::create(int Protocol)
 	}
 }
 
-bool EzSock::create(int Protocol, int Type)
+bool AsDbgEzSock::create(int Protocol, int Type)
 {
 	if (this->check())
 		return false;
@@ -197,7 +199,7 @@ bool EzSock::create(int Protocol, int Type)
 	return sock > SOCKET_NONE;
 }
 
-bool EzSock::bind(unsigned short port)
+bool AsDbgEzSock::bind(unsigned short port)
 {
 	if (!check()) return false;
 
@@ -209,7 +211,7 @@ bool EzSock::bind(unsigned short port)
 	return !lastCode;
 }
 
-bool EzSock::listen()
+bool AsDbgEzSock::listen()
 {
 	lastCode = ::listen(sock, MAXCON);
 	if (lastCode == SOCKET_ERROR) return false;
@@ -219,7 +221,7 @@ bool EzSock::listen()
 	return true;
 }
 
-bool EzSock::accept(EzSock* socket)
+bool AsDbgEzSock::accept(AsDbgEzSock* socket)
 {
 	if (!blocking && !CanRead()) return false;
 
@@ -234,7 +236,7 @@ bool EzSock::accept(EzSock* socket)
 	return true;
 }
 
-void EzSock::close()
+void AsDbgEzSock::close()
 {
 	state = skDISCONNECTED;
 
@@ -248,12 +250,12 @@ void EzSock::close()
 	sock = INVALID_SOCKET;
 }
 
-long EzSock::uAddr()
+long AsDbgEzSock::uAddr()
 {
 	return addr.sin_addr.s_addr;
 }
 
-int EzSock::connect(const char* host, unsigned short port)
+int AsDbgEzSock::connect(const char* host, unsigned short port)
 {
 	if (!check())
 		return 1;
@@ -276,7 +278,7 @@ int EzSock::connect(const char* host, unsigned short port)
 	return 0;
 }
 
-bool EzSock::CanRead()
+bool AsDbgEzSock::CanRead()
 {
 	FD_ZERO(scks);
 	FD_SET((unsigned)sock, scks);
@@ -284,7 +286,7 @@ bool EzSock::CanRead()
 	return select(sock + 1, scks, NULL, NULL, times) > 0;
 }
 
-bool EzSock::IsError()
+bool AsDbgEzSock::IsError()
 {
 	if (state == skERROR || sock == -1)
 		return true;
@@ -299,7 +301,7 @@ bool EzSock::IsError()
 	return true;
 }
 
-int EzSock::ReceiveUDP(const void* buffer, int size, sockaddr_in* from)
+int AsDbgEzSock::ReceiveUDP(const void* buffer, int size, sockaddr_in* from)
 {
 #ifdef _MSC_VER
 	int client_length = (int)sizeof(struct sockaddr_in);
@@ -309,17 +311,17 @@ int EzSock::ReceiveUDP(const void* buffer, int size, sockaddr_in* from)
 	return recvfrom(this->sock, (char*)buffer, size, 0, (struct sockaddr*)from, &client_length);
 }
 
-int EzSock::Receive(const void* buffer, int size, int spos)
+int AsDbgEzSock::Receive(const void* buffer, int size, int spos)
 {
 	return recv(this->sock, (char*)buffer + spos, size, 0);
 }
 
-int EzSock::SendUDP(const void* buffer, int size, sockaddr_in* to)
+int AsDbgEzSock::SendUDP(const void* buffer, int size, sockaddr_in* to)
 {
 	return sendto(this->sock, (char*)buffer, size, 0, (struct sockaddr *)&to, sizeof(struct sockaddr_in));
 }
 
-int EzSock::SendRaw(const void* data, int dataSize)
+int AsDbgEzSock::SendRaw(const void* data, int dataSize)
 {
 	return send(this->sock, (char*)data, dataSize, 0);
 }
@@ -344,15 +346,15 @@ namespace dbg
 	static std::mutex _clientsMutex;
 	static std::mutex _breakpointMutex;
 
-	static std::atomic<bool> _initialized = false;
+	static std::atomic<bool> _initialized;
 	static std::thread _networkThread;
 	static std::vector<std::thread> _clientThreads;
-	static std::vector<EzSock*> _clientSockets;
+	static std::vector<AsDbgEzSock*> _clientSockets;
 
 	static std::vector<TypeEncoder> _typeEncoders;
 
-	static std::atomic<bool> _dbgStateBroken = false;
-	static std::atomic<int> _dbgStateBrokenDepth = -1;
+	static std::atomic<bool> _dbgStateBroken;
+	static std::atomic<int> _dbgStateBrokenDepth;
 
 	static std::mutex _dbgStateNotifyStepMutex;
 	static std::unique_lock<std::mutex> _dbgStateNotifyStepLock(_dbgStateNotifyStepMutex);
@@ -405,7 +407,7 @@ namespace dbg
 		return ret;
 	}
 
-	static void Send_Path(EzSock* sock)
+	static void Send_Path(AsDbgEzSock* sock)
 	{
 		uint16_t packetType = 4;
 		sock->SendRaw(&packetType, sizeof(uint16_t));
@@ -415,7 +417,7 @@ namespace dbg
 		sock->SendRaw(_scriptPath.c_str(), lenPath);
 	}
 
-	static void Send_Location(EzSock* sock)
+	static void Send_Location(AsDbgEzSock* sock)
 	{
 		const char* sectionName = nullptr;
 		int col = 0;
@@ -431,13 +433,13 @@ namespace dbg
 		sock->SendRaw(&col, sizeof(int));
 	}
 
-	static void Send_LocalClear(EzSock* sock)
+	static void Send_LocalClear(AsDbgEzSock* sock)
 	{
 		uint16_t packetType = 2;
 		sock->SendRaw(&packetType, sizeof(uint16_t));
 	}
 
-	static void Send_Local(EzSock* sock, const char* name, int typeID, void* ptr)
+	static void Send_Local(AsDbgEzSock* sock, const char* name, int typeID, void* ptr)
 	{
 		uint16_t packetType = 3;
 		sock->SendRaw(&packetType, sizeof(uint16_t));
@@ -516,7 +518,7 @@ namespace dbg
 		sock->SendRaw(value.c_str(), lenValue);
 	}
 
-	static void Send_AllLocals(EzSock* sock)
+	static void Send_AllLocals(AsDbgEzSock* sock)
 	{
 		Send_LocalClear(sock);
 
@@ -539,7 +541,7 @@ namespace dbg
 			const char* filename = nullptr;
 			int line = ctx->GetLineNumber(0, nullptr, &filename);
 
-			if (bp.m_line == line && bp.m_filename == filename) {
+			if (bp.m_line == line && !strcmp(bp.m_filename.c_str() + _scriptPath.size(), filename)) {
 				breakPointHit = true;
 				break;
 			}
@@ -572,7 +574,7 @@ namespace dbg
 		}
 
 		_clientsMutex.lock();
-		for (EzSock* sock : _clientSockets) {
+		for (AsDbgEzSock* sock : _clientSockets) {
 			Send_Location(sock);
 			Send_AllLocals(sock);
 		}
@@ -582,18 +584,18 @@ namespace dbg
 		_dbgStateNotifyStep.wait(_dbgStateNotifyStepLock);
 	}
 
-	static void ClientPacket_Step(EzSock* sock)
+	static void ClientPacket_Step(AsDbgEzSock* sock)
 	{
 		_dbgStateNotifyStep.notify_one();
 	}
 
-	static void ClientPacket_StepOver(EzSock* sock)
+	static void ClientPacket_StepOver(AsDbgEzSock* sock)
 	{
 		_dbgStateBrokenDepth = _ctx->GetCallstackSize();
 		_dbgStateNotifyStep.notify_one();
 	}
 
-	static void ClientPacket_StepOut(EzSock* sock)
+	static void ClientPacket_StepOut(AsDbgEzSock* sock)
 	{
 		if (_ctx->GetCallstackSize() == 1) {
 			_dbgStateBroken = false;
@@ -604,12 +606,12 @@ namespace dbg
 		_dbgStateNotifyStep.notify_one();
 	}
 
-	static void ClientPacket_Pause(EzSock* sock)
+	static void ClientPacket_Pause(AsDbgEzSock* sock)
 	{
 		_dbgStateBroken = true;
 	}
 
-	static void ClientPacket_Resume(EzSock* sock)
+	static void ClientPacket_Resume(AsDbgEzSock* sock)
 	{
 		bool wasBroken = _dbgStateBroken;
 		_dbgStateBroken = false;
@@ -618,16 +620,16 @@ namespace dbg
 		}
 	}
 
-	static void ClientPacket_AddBreakpoint(EzSock* sock)
+	static void ClientPacket_AddBreakpoint(AsDbgEzSock* sock)
 	{
-		uint16_t lenFilename;
+		uint16_t lenFilename = 0;
 		sock->Receive(&lenFilename, sizeof(uint16_t));
 
 		char* filename = (char*)malloc(lenFilename + 1);
 		sock->Receive(filename, lenFilename);
 		filename[lenFilename] = '\0';
 
-		int line;
+		int line = 0;
 		sock->Receive(&line, sizeof(int));
 
 		_breakpointMutex.lock();
@@ -641,16 +643,16 @@ namespace dbg
 		free(filename);
 	}
 
-	static void ClientPacket_DeleteBreakpoint(EzSock* sock)
+	static void ClientPacket_DeleteBreakpoint(AsDbgEzSock* sock)
 	{
-		uint16_t lenFilename;
+		uint16_t lenFilename = 0;
 		sock->Receive(&lenFilename, sizeof(uint16_t));
 
 		char* filename = (char*)malloc(lenFilename + 1);
 		sock->Receive(filename, lenFilename);
 		filename[lenFilename] = '\0';
 
-		int line;
+		int line = 0;
 		sock->Receive(&line, sizeof(int));
 
 		_breakpointMutex.lock();
@@ -668,16 +670,16 @@ namespace dbg
 		free(filename);
 	}
 
-	static void ClientPacket_SetValue(EzSock* sock)
+	static void ClientPacket_SetValue(AsDbgEzSock* sock)
 	{
-		uint16_t lenName;
+		uint16_t lenName = 0;
 		sock->Receive(&lenName, sizeof(uint16_t));
 
 		char* name = (char*)malloc(lenName + 1);
 		sock->Receive(name, lenName);
 		name[lenName] = '\0';
 
-		uint16_t lenValue;
+		uint16_t lenValue = 0;
 		sock->Receive(&lenValue, sizeof(uint16_t));
 
 		char* value = (char*)malloc(lenValue + 1);
@@ -701,7 +703,7 @@ namespace dbg
 			int typeID = _ctx->GetVarTypeId(varIndex);
 
 			switch (typeID) {
-			case asTYPEID_BOOL: *(bool*)varPtr = (_stricmp(value, "true") == 0); break;
+			case asTYPEID_BOOL: *(bool*)varPtr = (strcmp(value, "true") == 0); break;
 
 			case asTYPEID_INT8: *(int8_t*)varPtr = std::stoi(value); break;
 			case asTYPEID_INT16: *(int16_t*)varPtr = std::stoi(value); break;
@@ -738,7 +740,7 @@ namespace dbg
 		free(value);
 	}
 
-	static void ClientThreadFunction(EzSock* sock)
+	static void ClientThreadFunction(AsDbgEzSock* sock)
 	{
 		Log("Connection accepted from: %s", inet_ntoa(sock->addr.sin_addr));
 
@@ -751,7 +753,7 @@ namespace dbg
 		}
 
 		while (_initialized) {
-			uint16_t packetType;
+			uint16_t packetType = 0;
 			if (sock->Receive(&packetType, sizeof(uint32_t)) == -1) {
 				break;
 			}
@@ -784,7 +786,7 @@ namespace dbg
 	{
 		const int sockPort = 8912;
 
-		EzSock sock;
+		AsDbgEzSock sock;
 		sock.create();
 		sock.bind(sockPort);
 		if (!sock.listen()) {
@@ -794,7 +796,7 @@ namespace dbg
 		Log("Socket listening on port %d", sockPort);
 
 		while (_initialized) {
-			EzSock* client = new EzSock;
+			AsDbgEzSock* client = new AsDbgEzSock;
 			if (!sock.accept(client)) {
 				Log("Failed to accept client!");
 				continue;
@@ -817,13 +819,21 @@ namespace dbg
 		_ctx = ctx;
 		_ctx->SetLineCallback(asFUNCTION(dbg::ScriptLineCallback), nullptr, asCALL_CDECL);
 
+#ifdef _MSC_VER
 		char path[1024];
 		GetCurrentDirectoryA(1024, path);
 		_scriptPath = path;
+#else
+		//TODO
+#endif
+
+		_dbgStateBrokenDepth = -1;
 
 		_initialized = true;
 		_networkThread = std::thread(NetworkThreadFunction);
 		_typeEncoders.clear();
+
+		Log("Debugger initialized");
 	}
 
 	void Release()
@@ -839,6 +849,8 @@ namespace dbg
 
 		_ctx->ClearLineCallback();
 		_ctx = nullptr;
+
+		Log("Debugger released");
 	}
 
 	bool IsInitialized()
@@ -849,6 +861,11 @@ namespace dbg
 	asIScriptContext* GetContext()
 	{
 		return _ctx;
+	}
+
+	std::string ScriptPath()
+	{
+		return _scriptPath;
 	}
 
 	void ScriptPath(const char* path)

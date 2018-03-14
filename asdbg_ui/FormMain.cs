@@ -267,7 +267,7 @@ namespace asdbg_ui
 
 			m_client = new TcpClient();
 			m_client.BeginConnect("localhost", 8912, (ar) => {
-				if (!ar.IsCompleted) {
+				if (!ar.IsCompleted || !m_client.Connected) {
 					SetStatus("Connection failed.");
 					return;
 				}
