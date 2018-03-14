@@ -549,11 +549,11 @@ namespace dbg
 				decl = func->GetDeclaration(true, true, true);
 			}
 
-			uint16_t lenDecl = decl.size();
+			uint16_t lenDecl = (uint16_t)decl.size();
 			sock->SendRaw(&lenDecl, sizeof(uint16_t));
 			sock->SendRaw(decl.c_str(), lenDecl);
 
-			uint16_t lenFilename = strlen(filename);
+			uint16_t lenFilename = (uint16_t)strlen(filename);
 			sock->SendRaw(&lenFilename, sizeof(uint16_t));
 			sock->SendRaw(filename, lenFilename);
 
