@@ -849,6 +849,10 @@ namespace dbg
 		_ctx = ctx;
 		_ctx->SetLineCallback(asFUNCTION(dbg::ScriptLineCallback), nullptr, asCALL_CDECL);
 
+		if (_ctx->GetEngine()->GetEngineProperty(asEP_BUILD_WITHOUT_LINE_CUES) == 1) {
+			Log("WARNING: Engine property asEP_BUILD_WITHOUT_LINE_CUES is set! This will cause strange behavior while debugging.");
+		}
+
 #ifdef _MSC_VER
 		char path[1024];
 		GetCurrentDirectoryA(1024, path);
